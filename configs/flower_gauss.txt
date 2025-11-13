@@ -1,25 +1,25 @@
 # ========== dataset & training ==========
 dataset_type = llff
-llffhold = 8
-N_rand = 1024
-N_iters = 200000
-
+datadir = ./nerf_llff_data/flower
 basedir = ./logs
 expname = flower_gauss_sigma10
+
+llffhold = 8
+N_rand   = 1024
 
 # ========== nerf 网络结构 ==========
 netwidth = 256
 netdepth = 8
 
 # ========== 位置编码：Gaussian Fourier Features ==========
-i_embed = 0
-multires = 0          # 对 Gaussian 来说这里无所谓，可以填 0
+i_embed  = 0
+multires = 0          # 对 Gaussian 来说这里无所谓
 
-pe_type = gaussian
+pe_type      = gaussian
 pe_num_feats = 30
-pe_sigma = 10.0
+pe_sigma     = 10.0
 
 learnable_pe = False
 
-use_viewdirs = True
+use_viewdirs  = True
 multires_views = 0

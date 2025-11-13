@@ -1,23 +1,22 @@
 # ========== dataset & training ==========
 dataset_type = llff
-llffhold = 8          # 注意：没有下划线，要写成 llffhold
-N_rand = 1024
-N_iters = 200000
-
+datadir = ./nerf_llff_data/flower
 basedir = ./logs
 expname = flower_gauss_low
+
+llffhold = 8
+N_rand   = 1024
 
 # ========== nerf 网络结构 ==========
 netwidth = 256
 netdepth = 8
 
 # ========== 位置编码：低频 baseline ==========
-i_embed = 0
-multires = 4          # 低一点的 multires，当作“弱 baseline”
+i_embed  = 0
+multires = 4          # 低一点，当作“弱 baseline”
 
-pe_type = baseline
-
+pe_type      = baseline
 learnable_pe = False
 
-use_viewdirs = True
+use_viewdirs   = True
 multires_views = 4
