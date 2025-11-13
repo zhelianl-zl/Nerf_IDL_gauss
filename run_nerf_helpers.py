@@ -119,30 +119,40 @@ class LearnableFourierEmbedder(nn.Module):
                 outputs.append(torch.cos(scaled_inputs))
         
         return torch.cat(outputs, -1)
-
-
-def get_embedder(multires, i=0, learnable=False, learnable_phase=False, 
-                 learnable_freqs=True, init_scale=1.0):
-    """
-    Get embedder function for positional encoding
     
-    Args:
-        multires: Number of frequency bands (log2 of max frequency)
-        i: Embedding type (0: default, -1: none)
-        learnable: Use learnable Fourier features
-        learnable_phase: Make phase shifts learnable (only if learnable=True)
-        learnable_freqs: Make frequency bands learnable (only if learnable=True)
-        init_scale: Initial scale for frequency initialization (only if learnable=True)
-    
-    Returns:
-        embed: Embedding function or module
-        out_dim: Output dimension of embedding
+
+def get_embedder(multires,
+                 i=0,
+                 learnable: bool = False,
+                 learnable_freqs: bool = True,
+                 learnable_phase: bool = False,
+                 init_scale: float = 1.0,
+                 pe_type: str = 'baseline',
+                 gaussian_num_feats: int = 30,
+                 gaussian_sigma: float = 10.0):
     """
+    pe_type:
+      - 'baseline' : 原始 NeRF Embedder（或者你队友的 LearnableFourierEmbedder 开关由 learnable 控）
+      - 'learnable': 强制使用 LearnableFourierEmbedder
+      - 'gaussian' : 使用 Gaussian Fourier Features（RFF）
+    """
+    # i == -1: 不做编码，直接 Identity
     if i == -1:
         return nn.Identity(), 3
-    
-    if learnable:
-        # Use learnable Fourier feature encoding
+
+    # 1) Gaussian Fourier Features 分支
+    if pe_type == 'gaussian':
+        embedder_obj = GaussianFourierEmbedder(
+            input_dims=3,
+            num_feats=gaussian_num_feats,
+            sigma=gaussian_sigma,
+            include_input=True
+        )
+        return embedder_obj, embedder_obj.out_dim
+
+    # 2) Learnable Fourier 分支（仍然保留你队友版本）
+    if learnable or pe_type == 'learnable':
+        # 注意：这里用的是你队友已经写好的 LearnableFourierEmbedder
         embedder_obj = LearnableFourierEmbedder(
             input_dims=3,
             num_freqs=multires,
@@ -152,20 +162,75 @@ def get_embedder(multires, i=0, learnable=False, learnable_phase=False,
             init_scale=init_scale
         )
         return embedder_obj, embedder_obj.out_dim
-    else:
-        # Use original fixed positional encoding
-        embed_kwargs = {
-                    'include_input' : True,
-                    'input_dims' : 3,
-                    'max_freq_log2' : multires-1,
-                    'num_freqs' : multires,
-                    'log_sampling' : True,
-                    'periodic_fns' : [torch.sin, torch.cos],
-        }
-        
-        embedder_obj = Embedder(**embed_kwargs)
-        embed = lambda x, eo=embedder_obj : eo.embed(x)
-        return embed, embedder_obj.out_dim
+
+    # 3) baseline 分支：这里保留你项目中原本的 Embedder 实现
+    # === baseline: 你现在已有的实现 ===
+    # 下面这段是“模板”，你需要用自己项目的代码替换掉里面的细节
+    embed_kwargs = {
+        'include_input': True,
+        'input_dims': 3,
+        'max_freq_log2': multires - 1,
+        'num_freqs': multires,
+        'log_sampling': True,
+        'periodic_fns': [torch.sin, torch.cos],
+    }
+    embedder_obj = Embedder(**embed_kwargs)
+    #embedder_obj.create_embed_fns()
+    return embedder_obj.embed, embedder_obj.out_dim
+    # === baseline 部分结束 ===
+
+
+
+import math
+import torch
+import torch.nn as nn
+
+class GaussianFourierEmbedder(nn.Module):
+    """
+    Gaussian Fourier Features / Random Fourier Features encoding.
+
+    gamma(x) = [x, sin(2π Bx), cos(2π Bx)]
+    where B ~ N(0, sigma^2 I), sigma controls frequency bandwidth.
+    """
+    def __init__(self,
+                 input_dims: int = 3,
+                 num_feats: int = 30,
+                 sigma: float = 10.0,
+                 include_input: bool = True):
+        super().__init__()
+        self.input_dims = input_dims
+        self.num_feats = num_feats
+        self.sigma = sigma
+        self.include_input = include_input
+
+        # B ~ N(0, sigma^2 I)
+        B = torch.randn(num_feats, input_dims) * sigma
+        # 固定 B，不让它训练（经典 RFF 做法）
+        self.register_buffer("B", B)
+
+        out_dim = 0
+        if include_input:
+            out_dim += input_dims
+        # sin + cos
+        out_dim += 2 * num_feats
+        self.out_dim = out_dim
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        x: [..., input_dims]
+        return: [..., out_dim]
+        """
+        # [..., num_feats]
+        proj = 2 * math.pi * (x @ self.B.t())
+        sin = torch.sin(proj)
+        cos = torch.cos(proj)
+
+        outs = []
+        if self.include_input:
+            outs.append(x)
+        outs.extend([sin, cos])
+
+        return torch.cat(outs, dim=-1)
 
 
 # Model

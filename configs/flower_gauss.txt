@@ -1,0 +1,25 @@
+# ========== dataset & training (照你原始 flower.txt 的来) ==========
+dataset_type = llff
+llff_hold = 8
+N_rand = 1024
+N_iters = 200000
+...
+
+# ========== baseline nerf 网络结构部分照旧 ==========
+netwidth = 256
+netdepth = 8
+...
+
+# ========== 位置编码：Gaussian Fourier Features ==========
+i_embed = 0           # 启用自定义 PE
+multires = 0          # baseline 这边我们不用 log2 PE，让 baseline 更偏低频
+
+pe_type = gaussian    # ★ 新增：使用 Gaussian Fourier Features
+pe_num_feats = 30     # sin/cos 对数，最终维度 ≈ 3 + 60
+pe_sigma = 10.0       # σ 控制频率带宽，你可以后面扫 {5, 10, 20}
+
+learnable_pe = False  # 先只用固定高斯矩阵，让对比更干净
+
+# 如果你对 view dirs 也想用 Gaussian，可以加：
+use_viewdirs = True
+multires_views = 0

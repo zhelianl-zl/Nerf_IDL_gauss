@@ -192,21 +192,34 @@ def create_nerf(args):
     """Instantiate NeRF's MLP model.
     """
     # Create embedders (position encoding)
-    embed_fn, input_ch = get_embedder(args.multires, args.i_embed, 
-                                       learnable=args.learnable_pe,
-                                       learnable_phase=args.learnable_pe_phase,
-                                       learnable_freqs=getattr(args, 'pe_learnable_freqs', True),
-                                       init_scale=getattr(args, 'pe_init_scale', 1.0))
+    embed_fn, input_ch = get_embedder(
+        args.multires, args.i_embed,
+        learnable=args.learnable_pe,
+        learnable_phase=args.learnable_pe_phase,
+        learnable_freqs=getattr(args, 'pe_learnable_freqs', True),
+        init_scale=getattr(args, 'pe_init_scale', 1.0),
+        pe_type=getattr(args, 'pe_type', 'baseline'),
+        gaussian_num_feats=getattr(args, 'pe_num_feats', 30),
+        gaussian_sigma=getattr(args, 'pe_sigma', 10.0),
+    )
 
     input_ch_views = 0
     embeddirs_fn = None
     if args.use_viewdirs:
-        embeddirs_fn, input_ch_views = get_embedder(args.multires_views, args.i_embed,
-                                                     learnable=args.learnable_pe,
-                                                     learnable_phase=args.learnable_pe_phase,
-                                                     learnable_freqs=getattr(args, 'pe_learnable_freqs', True),
-                                                     init_scale=getattr(args, 'pe_init_scale', 1.0))
-    
+        embeddirs_fn, input_ch_views = get_embedder(
+            args.multires_views, args.i_embed,
+            learnable=args.learnable_pe,
+            learnable_phase=args.learnable_pe_phase,
+            learnable_freqs=getattr(args, 'pe_learnable_freqs', True),
+            init_scale=getattr(args, 'pe_init_scale', 1.0),
+            pe_type=getattr(args, 'pe_type', 'baseline'),
+            gaussian_num_feats=getattr(args, 'pe_num_feats', 30),
+            gaussian_sigma=getattr(args, 'pe_sigma', 10.0),
+        )
+    else:
+        embeddirs_fn = None
+        input_ch_views = 0
+  
     # Move embedders to device if they are nn.Modules
     if isinstance(embed_fn, nn.Module):
         embed_fn = embed_fn.to(device)
@@ -331,6 +344,10 @@ def create_nerf(args):
     render_kwargs_test = {k : render_kwargs_train[k] for k in render_kwargs_train}
     render_kwargs_test['perturb'] = False
     render_kwargs_test['raw_noise_std'] = 0.
+
+    print("embed_fn type:", type(embed_fn))
+    if hasattr(embed_fn, 'freq_bands'):
+        print("freq_bands:", embed_fn.freq_bands[:5])
 
     return render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer, embed_fn, embeddirs_fn, pe_lrate
 
@@ -623,6 +640,16 @@ def config_parser():
                         help='wandb entity/team name (optional)')
     parser.add_argument("--wandb_run_name", type=str, default=None,
                         help='wandb run name (optional, defaults to expname)')
+    
+    # Positional encoding type and Gaussian Fourier settings
+    parser.add_argument("--pe_type", type=str, default="baseline",
+                        choices=["baseline", "learnable", "gaussian"],
+                        help="positional encoding type")
+    parser.add_argument("--pe_sigma", type=float, default=10.0,
+                        help="sigma for Gaussian Fourier features")
+    parser.add_argument("--pe_num_feats", type=int, default=30,
+                        help="number of Gaussian Fourier features per input dim (gamma(x) = [x, sin, cos])")
+
 
     return parser
 
@@ -1096,3 +1123,4 @@ if __name__=='__main__':
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
     train()
+

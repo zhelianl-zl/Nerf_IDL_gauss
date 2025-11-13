@@ -1,0 +1,26 @@
+# ========== dataset & training (照你原始 flower.txt 的来) ==========
+dataset_type = llff
+llff_hold = 8
+N_rand = 1024
+N_iters = 200000
+...
+
+# ========== baseline nerf 网络结构部分照旧 ==========
+netwidth = 256
+netdepth = 8
+...
+
+# 位置编码：低频 baseline
+i_embed = 0
+multires = 4         # 或者更低 / 不用 PE（用 i_embed=-1）
+
+pe_type = baseline
+
+pe_num_feats = 30     # sin/cos 对数，最终维度 ≈ 3 + 60
+pe_sigma = 10.0       # σ 控制频率带宽，你可以后面扫 {5, 10, 20}
+
+learnable_pe = False  # 先只用固定高斯矩阵，让对比更干净
+
+# 如果你对 view dirs 也想用 Gaussian，可以加：
+use_viewdirs = True
+multires_views = 0
