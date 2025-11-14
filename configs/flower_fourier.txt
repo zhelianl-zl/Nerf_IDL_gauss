@@ -1,0 +1,45 @@
+# ========== 基本信息 ==========
+expname     = flower_fourier
+basedir     = ./logs
+datadir     = ./nerf_llff_data/flower
+dataset_type = llff
+
+# ========== 数据集 & 训练设置 ==========
+factor      = 8          # LLFF 下采样因子
+llffhold    = 8          # hold-out 间隔
+
+N_rand      = 1024       # 每 step 采样的光线数
+N_samples   = 64         # coarse 网络每条光线采样点
+N_importance = 64        # fine 网络额外重要性采样点
+N_iters     = 20000      # 训练迭代次数（从 20w 改成 2w）
+
+# ========== 网络结构 ==========
+netwidth    = 256
+netdepth    = 8
+
+# ========== 位置编码：Learnable Fourier（基于原始 log-bands） ==========
+# 这里是「普通 NeRF 正弦/余弦 log-bands」+ 可学习频率
+pe_type             = baseline   # 使用 baseline（非 Gaussian）位置编码
+i_embed             = 0          # 0 = 使用 NeRF 默认位置编码
+multires            = 10         # 3D 位置的 log2 最大频率
+multires_views      = 4          # 视角方向的频率
+
+# 开启 Learnable Fourier Encoding
+learnable_pe        = True       # 打开可学习 Fourier 位置编码
+pe_learnable_freqs  = True       # 频率可学习
+learnable_pe_phase  = False      # 相位是否可学习（先关掉，想试可以改成 True）
+pe_init_scale       = 1.0        # 频率初始化缩放
+pe_lr_scale         = 0.5        # PE 参数学习率 = 主网络学习率 * 0.5
+
+# ========== 视角、噪声等 ==========
+use_viewdirs   = True
+raw_noise_std  = 1e-2           # 训练时在输出上加一点噪声，有助于泛化
+
+# ========== 优化器设置 ==========
+lrate       = 5e-4              # 主网络学习率
+grad_clip   = 1.0               # 梯度裁剪上限，稳定训练
+
+# ========== Weights & Biases 日志（可被命令行覆盖） ==========
+use_wandb       = True
+wandb_project   = Nerf_IDL_gauss
+wandb_run_name  = flower_test_with_fourier_new_config
