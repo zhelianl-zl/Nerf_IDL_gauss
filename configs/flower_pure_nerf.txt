@@ -31,3 +31,5 @@ grad_clip = 1.0
 use_wandb      = True
 wandb_project  = Nerf_IDL_gauss_final
 wandb_run_name = flower_pure_nerf
+
+N_iters = 30000
