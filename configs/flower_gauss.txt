@@ -23,3 +23,5 @@ learnable_pe = False
 
 use_viewdirs  = True
 multires_views = 0
+
+N_iters = 20000

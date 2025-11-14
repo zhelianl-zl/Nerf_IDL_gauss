@@ -515,6 +515,8 @@ def config_parser():
 
     import configargparse
     parser = configargparse.ArgumentParser()
+    parser.add_argument("--N_iters", type=int, default=200000,
+                    help='number of training iterations')
     parser.add_argument('--config', is_config_file=True, 
                         help='config file path')
     parser.add_argument("--expname", type=str, 
@@ -821,7 +823,7 @@ def train():
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
 
-    N_iters = 200000 + 1
+    N_iters = args.N_iters + 1
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
