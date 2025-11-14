@@ -1,5 +1,5 @@
 # ========== dataset & training ==========
-expname      = flower_gauss_sigma10_aligned
+expname      = flower_gauss_sigma5_aligned
 basedir      = ./logs
 datadir      = ./nerf_llff_data/flower
 dataset_type = llff
