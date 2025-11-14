@@ -988,36 +988,31 @@ def train():
         # Save checkpoints every 10000 steps
         if i % 10000 == 0:
             path = os.path.join(basedir, expname, '{:06d}.tar'.format(i))
+
+            # 先只保存一定存在的东西
             ckpt_dict = {
                 'global_step': global_step,
                 'network_fn_state_dict': render_kwargs_train['network_fn'].state_dict(),
-                'network_fine_state_dict': render_kwargs_train['network_fine'].state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
             }
 
-            # 只有有 fine 网络的时候才保存
+            # 如果有 fine 网络，再额外保存
             network_fine = render_kwargs_train.get('network_fine', None)
             if network_fine is not None:
                 ckpt_dict['network_fine_state_dict'] = network_fine.state_dict()
 
-            torch.save(ckpt_dict, path)
-            print('Saved checkpoints at', path)
-
-            if args.use_wandb:
-                wandb.save(path, base_path=basedir)
-                wandb.log({'checkpoint/saved': 1, 'checkpoint/step': global_step}, step=global_step)
-                print(f'Uploaded checkpoint to wandb: step {global_step}')
-
-            # Save embedder parameters if learnable
+            # 如果用了可学习 PE，也一并保存
             if args.learnable_pe:
                 if isinstance(embed_fn, nn.Module):
                     ckpt_dict['embed_fn_state_dict'] = embed_fn.state_dict()
                 if embeddirs_fn is not None and isinstance(embeddirs_fn, nn.Module):
                     ckpt_dict['embeddirs_fn_state_dict'] = embeddirs_fn.state_dict()
+
+            # 真正写文件
             torch.save(ckpt_dict, path)
             print('Saved checkpoints at', path)
-            
-            # Save checkpoint to wandb
+
+            # 同步到 wandb
             if args.use_wandb:
                 wandb.save(path, base_path=basedir)
                 wandb.log({'checkpoint/saved': 1, 'checkpoint/step': global_step}, step=global_step)
