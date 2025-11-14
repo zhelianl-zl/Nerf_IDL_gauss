@@ -43,4 +43,4 @@ grad_clip   = 1.0
 # ========== Weights & Biases ==========
 use_wandb      = True
 wandb_project  = Nerf_IDL_gauss
-wandb_run_name = flower_gauss_sigma10_aligned
+wandb_run_name = flower_gauss_sigma5_aligned
