@@ -1,35 +1,43 @@
-# ========= dataset & training =========
-expname = flower_pure_nerf
-basedir = ./logs
-datadir = ./nerf_llff_data/flower
+# ========= dataset & training (aligned baseline NeRF) =========
+expname      = flower_pure_nerf_aligned
+basedir      = ./logs
+datadir      = ./nerf_llff_data/flower
 dataset_type = llff
 
-factor  = 8
+factor   = 8
 llffhold = 8
 
 N_rand       = 1024
 N_samples    = 64
-N_importance = 0
+N_importance = 64
+N_iters      = 30000
 
-# netdepth = 8
-# netwidth = 256
+# ========= network =========
+netwidth = 256
+netdepth = 8
 
+# ========= positional encoding: vanilla NeRF sin/cos (log-bands), fixed =========
+pe_type        = baseline
+i_embed        = 0          # use NeRF default positional encoding
+multires       = 10         # max log2 frequency for 3D position
+multires_views = 4          # view-direction encoding
+
+# turn OFF learnable / Gaussian extensions
+learnable_pe        = False
+pe_learnable_freqs  = False
+learnable_pe_phase  = False
+pe_init_scale       = 1.0
+pe_lr_scale         = 1.0
+
+# ========= viewdirs, noise =========
 use_viewdirs  = True
 raw_noise_std = 1e-2
 
-# ======== 关闭所有「可学习 Fourier / Gaussian」的东西，保持标准 NeRF ========
-learnable_pe       = False
-pe_learnable_freqs = False
-pe_init_scale      = 1.0
-pe_lr_scale        = 1.0
-learnable_pe_phase = False
-
+# ========= optimization =========
 lrate     = 5e-4
 grad_clip = 1.0
 
-# ======== Weights & Biases =========
+# ========= Weights & Biases =========
 use_wandb      = True
-wandb_project  = Nerf_IDL_gauss_final
-wandb_run_name = flower_pure_nerf
-
-N_iters = 30000
+wandb_project  = Nerf_IDL_gauss
+wandb_run_name = flower_pure_nerf_aligned
