@@ -1,0 +1,33 @@
+# ========= dataset & training =========
+expname = flower_pure_nerf
+basedir = ./logs
+datadir = ./data/nerf_llff_data/flower
+dataset_type = llff
+
+factor  = 8
+llffhold = 8
+
+N_rand       = 1024
+N_samples    = 64
+N_importance = 64
+
+# netdepth = 8
+# netwidth = 256
+
+use_viewdirs  = True
+raw_noise_std = 1e-2
+
+# ======== 关闭所有「可学习 Fourier / Gaussian」的东西，保持标准 NeRF ========
+learnable_pe       = False
+pe_learnable_freqs = False
+pe_init_scale      = 1.0
+pe_lr_scale        = 1.0
+learnable_pe_phase = False
+
+lrate     = 5e-4
+grad_clip = 1.0
+
+# ======== Weights & Biases =========
+use_wandb      = True
+wandb_project  = Nerf_IDL_gauss_final
+wandb_run_name = flower_pure_nerf
