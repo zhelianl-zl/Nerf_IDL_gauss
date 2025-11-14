@@ -1,5 +1,6 @@
 import numpy as np
-import os, imageio
+import os
+import imageio.v2 as imageio
 
 
 ########## Slightly modified version of LLFF data loading code 
@@ -56,7 +57,7 @@ def _minify(basedir, factors=[], resolutions=[]):
             print('Removed duplicates')
         print('Done')
             
-        
+            
         
         
 def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
@@ -105,23 +106,17 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     if not load_imgs:
         return poses, bds
     
+    # ---- 修改后的 imread：不再使用 ignoregamma 参数 ----
     def imread(f):
-        if f.endswith('png'):
-            return imageio.imread(f, ignoregamma=True)
-        else:
-            return imageio.imread(f)
+        return imageio.imread(f)
         
-    imgs = imgs = [imread(f)[...,:3]/255. for f in imgfiles]
+    imgs = [imread(f)[...,:3]/255. for f in imgfiles]
     imgs = np.stack(imgs, -1)  
     
     print('Loaded image data', imgs.shape, poses[:,-1,0])
     return poses, bds, imgs
 
     
-            
-            
-    
-
 def normalize(x):
     return x / np.linalg.norm(x)
 
@@ -314,6 +309,3 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     poses = poses.astype(np.float32)
 
     return images, poses, bds, render_poses, i_test
-
-
-
