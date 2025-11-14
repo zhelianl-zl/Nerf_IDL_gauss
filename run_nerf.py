@@ -295,7 +295,7 @@ def create_nerf(args):
 
         # Load model
         model.load_state_dict(ckpt['network_fn_state_dict'])
-        if model_fine is not None:
+        if model_fine is not None and 'network_fine_state_dict' in ckpt and ckpt['network_fine_state_dict'] is not None:
             model_fine.load_state_dict(ckpt['network_fine_state_dict'])
         
         # Load embedder parameters if they exist
@@ -994,6 +994,20 @@ def train():
                 'network_fine_state_dict': render_kwargs_train['network_fine'].state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
             }
+
+            # 只有有 fine 网络的时候才保存
+            network_fine = render_kwargs_train.get('network_fine', None)
+            if network_fine is not None:
+                ckpt_dict['network_fine_state_dict'] = network_fine.state_dict()
+
+            torch.save(ckpt_dict, path)
+            print('Saved checkpoints at', path)
+
+            if args.use_wandb:
+                wandb.save(path, base_path=basedir)
+                wandb.log({'checkpoint/saved': 1, 'checkpoint/step': global_step}, step=global_step)
+                print(f'Uploaded checkpoint to wandb: step {global_step}')
+
             # Save embedder parameters if learnable
             if args.learnable_pe:
                 if isinstance(embed_fn, nn.Module):
