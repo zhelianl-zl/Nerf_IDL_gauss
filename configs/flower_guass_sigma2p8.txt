@@ -24,7 +24,7 @@ pe_type      = gaussian
 pe_num_feats = 30
 pe_sigma     = 2.8
 
-# 这里先保持 Gaussian 特征是“固定随机”的，不可学习，和原始设计一致
+# 控制是否学习频率+相位
 learnable_pe        = False
 pe_learnable_freqs  = False
 learnable_pe_phase  = False

@@ -24,12 +24,12 @@ pe_type      = gaussian
 pe_num_feats = 30
 pe_sigma     = 1.8
 
-# 这里先保持 Gaussian 特征是“固定随机”的，不可学习，和原始设计一致
+# 控制可学习频率+相位
 learnable_pe        = True
 pe_learnable_freqs  = True
 learnable_pe_phase  = False
 pe_init_scale       = 1.0
-pe_lr_scale         = 1.0
+pe_lr_scale         = 0.1
 
 # ========== 视角编码 & 噪声 ==========
 use_viewdirs   = True
