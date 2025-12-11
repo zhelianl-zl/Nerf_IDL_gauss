@@ -11,6 +11,9 @@ Weights & Biases dashboard: https://wandb.ai/zhelianl-carnegie-mellon-university
 ## 1. Baseline NeRF vs. Fourier-only NeRF
 
 The NeRF model with the original log-band positional encoding and the variant that replaces it with standard Fourier features show almost identical behavior: their PSNR/SSIM curves overlap and the depth-uncertainty (grayscale z_std) maps are visually very similar. This suggests that, for this flower scene and training budget, the original NeRF positional encoding already provides sufficient frequency coverage. Switching to another fixed Fourier scheme (or slightly modifying the Fourier parameters) does not yield a measurable improvement in reconstruction quality.
+![](figs/1.jpg)
+![](figs/2.jpg)
+![](figs/3.jpg)
 
 ---
 
@@ -26,6 +29,9 @@ By sweeping different σ values, we found that σ = 1.8 offers the best trade-of
 Although PSNR/SSIM at σ = 1.8 are still slightly lower than those of pure NeRF / Fourier-only NeRF, the gap is small. In other words, Gaussian Fourier with σ = 1.8 significantly improves perceived edge sharpness while only marginally degrading PSNR and SSIM.
 
 Intuitively, the ground-truth images already contain some blur (camera optics, downsampling, etc.). Gaussian Fourier adds extra high-frequency detail, which makes edges visually sharper, but also makes the prediction less similar to the slightly blurred ground truth. Because PSNR and SSIM only reward “looking like the GT image” and do not reward “looking sharper than the GT”, these metrics give the Gaussian version a small penalty even though the images look better to a human observer.
+![](figs/4.jpg)
+![](figs/5.jpg)
+![](figs/6.jpg)
 
 ---
 
@@ -38,6 +44,9 @@ On top of the σ = 1.8 Gaussian baseline, we enabled learnable Fourier frequenci
 - the rendered images and z_std maps are also visually very similar.
 
 Thus, making the Gaussian frequencies learnable brings almost no benefit in this experiment. This indicates that the fixed Gaussian encoding with σ = 1.8 already provides a good frequency distribution for this scene; additional learnable degrees of freedom are not the limiting factor for performance and mainly add optimization complexity.
+![](figs/7.jpg)
+![](figs/8.jpg)
+![](figs/9.jpg)
 
 ---
 
@@ -50,6 +59,9 @@ We further extended the previous setup by also making the phases learnable in ad
 - edge sharpness is still improved relative to pure NeRF but not noticeably better than the σ = 1.8 Gaussian baseline.
 
 Theoretically, since we already use both sin and cos components, later linear layers can absorb arbitrary phase shifts. The experiments confirm this: explicitly learning phases changes the training dynamics a bit but does not materially change the final reconstruction quality. In this task, learnable phase is therefore not a key performance factor.
+![](figs/10.jpg)
+![](figs/11.jpg)
+![](figs/12.jpg)
 
 ---
 
