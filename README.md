@@ -11,6 +11,7 @@ Weights & Biases dashboard: https://wandb.ai/zhelianl-carnegie-mellon-university
 ## 1. Baseline NeRF vs. Fourier-only NeRF
 
 The NeRF model with the original log-band positional encoding and the variant that replaces it with standard Fourier features show almost identical behavior: their PSNR/SSIM curves overlap and the depth-uncertainty (grayscale z_std) maps are visually very similar. This suggests that, for this flower scene and training budget, the original NeRF positional encoding already provides sufficient frequency coverage. Switching to another fixed Fourier scheme (or slightly modifying the Fourier parameters) does not yield a measurable improvement in reconstruction quality.
+
 ![](figs/1.jpg)
 ![](figs/2.jpg)
 ![](figs/3.jpg)
